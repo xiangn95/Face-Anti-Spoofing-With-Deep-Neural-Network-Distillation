@@ -10,7 +10,7 @@ import random
 import math
 from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms
-
+from pdb import set_trace
 
 from model.model import AlexNet, MaximumMeanDiscrepancy, SimilarityEmbedding 
 
@@ -124,15 +124,16 @@ def train_parent():
 
             
             # forward + backward + optimize
-            map_x, embedding, x_Block1, x_Block2, x_Block3, x_input =  model(inputs, inputs_ir, inputs_depth)
+            # map_x, embedding, x_Block1, x_Block2, x_Block3, x_input =  model(inputs, inputs_ir, inputs_depth)
             #map_x, embedding, x_Block1, x_Block2, x_Block3, x_input =  model(inputs, inputs_depth)
 
+            output = model(inputs, inputs_depth, inputs_ir)
             #pdb.set_trace()
             # absolute_loss = criterion_absolute_loss(map_x, binary_mask)
             # contrastive_loss = criterion_contrastive_loss(map_x, binary_mask)
-            
+            set_trace()
             # loss =  absolute_loss + contrastive_loss
-            loss = CEloss(map_x, spoof_label)
+            loss = CEloss(output, spoof_label)
 
             loss.backward()
             

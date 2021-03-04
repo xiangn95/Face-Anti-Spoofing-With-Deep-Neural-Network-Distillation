@@ -20,21 +20,24 @@ class AlexNet(nn.Module):
 		self.alexnet_depth = models.alexnet(pretrained=True)
 		self.alexnet_ir = models.alexnet(pretrained=True)
 
-		self.fc_rgb = nn.Linear(4096, 2)
-		self.fc_depth = nn.Linear(4096, 2)
-		self.fc_ir = nn.Linear(4096, 2)
+		# self.fc_rgb = nn.Linear(4096, 2)
+		# self.fc_depth = nn.Linear(4096, 2)
+		# self.fc_ir = nn.Linear(4096, 2)
+		self.fc_combined = nn.Linear(4096 * 3, 2)
 
 	def forward(self, image_rgb, image_depth, image_ir):
 		output_rgb = self.alexnet_rgb(image_rgb)
-		output_rgb = self.fc_rgb(output_rgb)
+		# output_rgb = self.fc_rgb(output_rgb)
 
 		output_depth = self.alexnet_depth(image_depth)
-		output_depth = self.fc_depth(output_depth)
+		# output_depth = self.fc_depth(output_depth)
 
 		output_ir = self.alexnet_ir(image_ir)
-		output_ir = self.fc_ir(output_ir)
+		# output_ir = self.fc_ir(output_ir)
 
-		return output_rgb, output_depth, output_ir
+		output_combined = torch.cat((output_rgb, output_depth, output_ir), dim=1)
+
+		return output_combined
 
 class MaximumMeanDiscrepancy(nn.Module):
 	def __init__(self):
