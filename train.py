@@ -31,7 +31,7 @@ from utils import AvgrageMeter, accuracy, performances
 
 
 # Dataset root
-image_dir = '/home/Disk1T/hxy/CASIA_CeFA/CASIA-CeFA/phase1/'         
+image_dir = '/home/Disk1T/hxy/CASIA-CeFA/CASIA-CeFA/phase1/'         
 
 train_list = '/home/Disk1T/hxy/CASIA-CeFA/CASIA-CeFA/phase1/4@1_train.txt'
 val_list = '/home/Disk1T/hxy/CASIA-CeFA/CASIA-CeFA/phase1/4@1_dev_res.txt'
@@ -235,7 +235,6 @@ if __name__ == "__main__":
     parser.add_argument('--log', type=str, default="CDCN_3modality2_P1", help='log and save model name')
     parser.add_argument('--finetune', action='store_true', default=False, help='whether finetune other models')
     parser.add_argument('--theta', type=float, default=0.7, help='hyper-parameters in CDCNpp')
-    # try	
 	
     args = parser.parse_args()
     train_parent()
