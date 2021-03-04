@@ -234,7 +234,7 @@ if __name__ == "__main__":
     parser.add_argument('--epochs', type=int, default=50, help='total training epochs')
     parser.add_argument('--log', type=str, default="CDCN_3modality2_P1", help='log and save model name')
     parser.add_argument('--finetune', action='store_true', default=False, help='whether finetune other models')
-	parser.add_argument('--theta', type=float, default=0.7, help='hyper-parameters in CDCNpp')
+    parser.add_argument('--theta', type=float, default=0.7, help='hyper-parameters in CDCNpp')
 	
 	
     args = parser.parse_args()
