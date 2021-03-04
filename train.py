@@ -135,7 +135,7 @@ def train_parent():
             #pdb.set_trace()
             # absolute_loss = criterion_absolute_loss(map_x, binary_mask)
             # contrastive_loss = criterion_contrastive_loss(map_x, binary_mask)
-            set_trace()
+            # set_trace()
             # loss =  absolute_loss + contrastive_loss
             loss = CEloss(output, spoof_label.long().squeeze(1))
 
