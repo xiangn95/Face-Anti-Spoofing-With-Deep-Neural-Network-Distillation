@@ -31,10 +31,14 @@ from utils import AvgrageMeter, accuracy, performances
 
 
 # Dataset root
-image_dir = '/wrk/yuzitong/DONOTREMOVE/CVPRW2020/'         
+image_dir = '/home/Disk1T/hxy/CASIA_CeFA/CASIA-CeFA/phase1/'         
+
+train_list = '/home/Disk1T/hxy/CASIA-CeFA/CASIA-CeFA/phase1/4@1_train.txt'
+val_list = '/home/Disk1T/hxy/CASIA-CeFA/CASIA-CeFA/phase1/4@1_dev_res.txt'
+
    
-train_list = '/wrk/yuzitong/DONOTREMOVE/CVPRW2020/4@1_train.txt'
-val_list = '/wrk/yuzitong/DONOTREMOVE/CVPRW2020/4@1_dev_res.txt'
+# train_list = '/wrk/yuzitong/DONOTREMOVE/CVPRW2020/4@1_train.txt'
+# val_list = '/wrk/yuzitong/DONOTREMOVE/CVPRW2020/4@1_dev_res.txt'
 
 #train_list = '/wrk/yuzitong/DONOTREMOVE/CVPRW2020/4@2_train.txt'
 #val_list = '/wrk/yuzitong/DONOTREMOVE/CVPRW2020/4@2_dev_res.txt'
