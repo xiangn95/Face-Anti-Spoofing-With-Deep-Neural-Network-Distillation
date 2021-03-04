@@ -23,7 +23,7 @@ class AlexNet(nn.Module):
 		# self.fc_rgb = nn.Linear(4096, 2)
 		# self.fc_depth = nn.Linear(4096, 2)
 		# self.fc_ir = nn.Linear(4096, 2)
-		self.fc_combined = nn.Linear(4096 * 3, 2)
+		self.fc_combined = nn.Linear(1000 * 3, 2)
 
 	def forward(self, image_rgb, image_depth, image_ir):
 		output_rgb = self.alexnet_rgb(image_rgb)
@@ -36,6 +36,7 @@ class AlexNet(nn.Module):
 		# output_ir = self.fc_ir(output_ir)
 
 		output_combined = torch.cat((output_rgb, output_depth, output_ir), dim=1)
+		output_combined = self.fc_combined(output_combined)
 
 		return output_combined
 
