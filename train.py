@@ -157,7 +157,7 @@ def train_parent():
                 #FeatureMap2Heatmap(x_input, x_Block1, x_Block2, x_Block3, map_x)
 
                 # log written
-                set_trace()
+                # set_trace()
                 print('epoch:%d, mini-batch:%3d, lr=%f, CE_loss= %.4f, accuracy= %.4f' % (epoch + 1, i + 1, lr,  loss_CE.avg, accu[i]))
         
             #break            
