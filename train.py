@@ -96,7 +96,7 @@ def train_parent():
 
 
     ACER_save = 1.0
-    
+    accu = []
     for epoch in range(args.epochs):  # loop over the dataset multiple times
         # scheduler.step()
         if (epoch + 1) % args.step_size == 0:
@@ -147,7 +147,7 @@ def train_parent():
             # loss_absolute.update(absolute_loss.data, n)
             # loss_contra.update(contrastive_loss.data, n)
             loss_CE.update(loss, n)
-            
+            accu.extend(accuracy(output, spoof_label.long().squeeze(1)))
         
 
             if i % echo_batches == echo_batches-1:    # print every 50 mini-batches
@@ -156,14 +156,14 @@ def train_parent():
                 #FeatureMap2Heatmap(x_input, x_Block1, x_Block2, x_Block3, map_x)
 
                 # log written
-                print('epoch:%d, mini-batch:%3d, lr=%f, CE_loss= %.4f' % (epoch + 1, i + 1, lr,  loss_CE.avg))
+                print('epoch:%d, mini-batch:%3d, lr=%f, CE_loss= %.4f, accuracy= %.4f' % (epoch + 1, i + 1, lr,  loss_CE.avg, accu[i]))
         
             #break            
         
-        scheduler.step()  
+        # scheduler.step()  
         # whole epoch average
         print('epoch:%d, Train: CE_loss= %.4f' % (epoch + 1, loss_CE.avg))
-        log_file.write('epoch:%d, Train: CE_loss= %.4f' % (epoch + 1, loss_CE.avg))
+        log_file.write('epoch:%d, Train: CE_loss= %.4f, accuracy= %.4f' % (epoch + 1, loss_CE.avg, sum(accu)/len(accu)))
         log_file.flush()
            
     
