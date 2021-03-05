@@ -147,8 +147,8 @@ def train_parent():
             # loss_absolute.update(absolute_loss.data, n)
             # loss_contra.update(contrastive_loss.data, n)
             loss_CE.update(loss, n)
-            set_trace()
-            accu.extend(accuracy(output, spoof_label.long().squeeze(1)))
+            # set_trace()
+            accu.extend(accuracy(output, spoof_label.long().squeeze(1))[0].item())
         
 
             if i % echo_batches == echo_batches-1:    # print every 50 mini-batches
@@ -157,6 +157,7 @@ def train_parent():
                 #FeatureMap2Heatmap(x_input, x_Block1, x_Block2, x_Block3, map_x)
 
                 # log written
+                set_trace()
                 print('epoch:%d, mini-batch:%3d, lr=%f, CE_loss= %.4f, accuracy= %.4f' % (epoch + 1, i + 1, lr,  loss_CE.avg, accu[i]))
         
             #break            
