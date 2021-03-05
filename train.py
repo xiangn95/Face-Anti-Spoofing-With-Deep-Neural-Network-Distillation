@@ -148,7 +148,7 @@ def train_parent():
             # loss_contra.update(contrastive_loss.data, n)
             loss_CE.update(loss, n)
             set_trace()
-            accu.extend(accuracy(output, spoof_label.long().squeeze(1))[0].item())
+            accu.append(accuracy(output, spoof_label.long().squeeze(1))[0].item())
         
 
             if i % echo_batches == echo_batches-1:    # print every 50 mini-batches
