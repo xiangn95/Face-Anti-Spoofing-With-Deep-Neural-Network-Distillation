@@ -147,6 +147,7 @@ def train_parent():
             # loss_absolute.update(absolute_loss.data, n)
             # loss_contra.update(contrastive_loss.data, n)
             loss_CE.update(loss, n)
+            set_trace()
             accu.extend(accuracy(output, spoof_label.long().squeeze(1)))
         
 
