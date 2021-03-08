@@ -30,7 +30,7 @@ class AlexNet(nn.Module):
 
 		self.conv_1x1 = nn.Conv2d(256 * 3, 256, 1, stride=1, padding=0)
 		
-		self.avg_pool = nn.AdaptiveAvgPool2d((6, 6))
+		self.avg_pool = nn.AvgPool2d((6, 6))
 		# self.avg_pool = self.modules[1]
 		
 		self.fc_classifier = nn.Linear(4096, 2)
