@@ -190,7 +190,7 @@ class CenterCrop(object):
         image_ir = image_ir[start_height: end_height, start_width: end_width, :]
         image_depth = image_depth[start_height: end_height, start_width: end_width, :]
 
-        set_trace()
+        # set_trace()
         return {'image_x': image_x,'image_ir': image_ir,'image_depth': image_depth, 'binary_mask': binary_mask, 'spoofing_label': spoofing_label}
 
 
