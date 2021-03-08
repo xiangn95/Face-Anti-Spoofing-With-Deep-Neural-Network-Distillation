@@ -167,8 +167,7 @@ class Resize(object):
         image_ir = cv2.resize(image_ir, (self.size, self.size))
         image_depth = cv2.resize(image_depth, (self.size, self.size))
 
-        return {'image_x': torch.from_numpy(image_x.astype(np.float)).float(), 'image_ir': torch.from_numpy(image_ir.astype(np.float)).float(), 'image_depth': torch.from_numpy(image_depth.astype(np.float)).float(), 'binary_mask': torch.from_numpy(binary_mask.astype(np.float)).float(), 'spoofing_label': torch.from_numpy(spoofing_label_np.astype(np.float)).float()}
-
+        return {'image_x': image_x,'image_ir': image_ir,'image_depth': image_depth, 'binary_mask': binary_mask, 'spoofing_label': spoofing_label}
 
 class CenterCrop(object):
     def __init__(self, size=224):
@@ -192,8 +191,7 @@ class CenterCrop(object):
         image_depth = image_depth[start_height: end_height, start_width: end_width, :]
 
         set_trace()
-        return {'image_x': torch.from_numpy(image_x.astype(np.float)).float(), 'image_ir': torch.from_numpy(image_ir.astype(np.float)).float(), 'image_depth': torch.from_numpy(image_depth.astype(np.float)).float(), 'binary_mask': torch.from_numpy(binary_mask.astype(np.float)).float(), 'spoofing_label': torch.from_numpy(spoofing_label_np.astype(np.float)).float()}
-
+        return {'image_x': image_x,'image_ir': image_ir,'image_depth': image_depth, 'binary_mask': binary_mask, 'spoofing_label': spoofing_label}
 
 
 class ToTensor(object):
