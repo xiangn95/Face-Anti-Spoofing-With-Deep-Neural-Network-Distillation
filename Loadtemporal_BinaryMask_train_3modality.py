@@ -152,6 +152,71 @@ class RandomHorizontalFlip(object):
             #print('no Flip')
             return {'image_x': image_x,'image_ir': image_ir,'image_depth': image_depth, 'binary_mask': binary_mask, 'spoofing_label': spoofing_label}
 
+class Resize(object):
+    """
+        Convert ndarrays in sample to Tensors.
+        process only one batch every time
+    """
+    def __init__(self, size=256):
+        self.size = size
+
+    def __call__(self, sample):
+        image_x, image_ir, image_depth, binary_mask, spoofing_label = sample['image_x'], sample['image_ir'], sample['image_depth'], sample['binary_mask'],sample['spoofing_label']
+        set_trace()
+        # swap color axis because
+        # numpy image: (batch_size) x H x W x C
+        # torch image: (batch_size) x C X H X W
+        image_x = image_x[:,:,::-1].transpose((2, 0, 1))
+        image_x = np.array(image_x)
+        
+        image_ir = image_ir[:,:,::-1].transpose((2, 0, 1))
+        image_ir = np.array(image_ir)
+        
+        image_depth = image_depth[:,:,::-1].transpose((2, 0, 1))
+        image_depth = np.array(image_depth)
+        
+        
+        
+        binary_mask = np.array(binary_mask)
+
+                        
+        spoofing_label_np = np.array([0],dtype=np.long)
+        spoofing_label_np[0] = spoofing_label
+        
+        
+        return {'image_x': torch.from_numpy(image_x.astype(np.float)).float(), 'image_ir': torch.from_numpy(image_ir.astype(np.float)).float(), 'image_depth': torch.from_numpy(image_depth.astype(np.float)).float(), 'binary_mask': torch.from_numpy(binary_mask.astype(np.float)).float(), 'spoofing_label': torch.from_numpy(spoofing_label_np.astype(np.float)).float()}
+
+
+class CenterCrop(object):
+    def __init__(self, size=224):
+        self.size=size
+
+    def __call__(self, sample):
+        image_x, image_ir, image_depth, binary_mask, spoofing_label = sample['image_x'], sample['image_ir'], sample['image_depth'], sample['binary_mask'],sample['spoofing_label']
+        set_trace()
+        # swap color axis because
+        # numpy image: (batch_size) x H x W x C
+        # torch image: (batch_size) x C X H X W
+        image_x = image_x[:,:,::-1].transpose((2, 0, 1))
+        image_x = np.array(image_x)
+        
+        image_ir = image_ir[:,:,::-1].transpose((2, 0, 1))
+        image_ir = np.array(image_ir)
+        
+        image_depth = image_depth[:,:,::-1].transpose((2, 0, 1))
+        image_depth = np.array(image_depth)
+        
+        
+        
+        binary_mask = np.array(binary_mask)
+
+                        
+        spoofing_label_np = np.array([0],dtype=np.long)
+        spoofing_label_np[0] = spoofing_label
+        
+        
+        return {'image_x': torch.from_numpy(image_x.astype(np.float)).float(), 'image_ir': torch.from_numpy(image_ir.astype(np.float)).float(), 'image_depth': torch.from_numpy(image_depth.astype(np.float)).float(), 'binary_mask': torch.from_numpy(binary_mask.astype(np.float)).float(), 'spoofing_label': torch.from_numpy(spoofing_label_np.astype(np.float)).float()}
+
 
 
 class ToTensor(object):

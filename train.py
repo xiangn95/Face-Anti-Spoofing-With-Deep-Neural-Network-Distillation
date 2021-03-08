@@ -15,7 +15,7 @@ from pdb import set_trace
 from model.model import AlexNet, MaximumMeanDiscrepancy, SimilarityEmbedding 
 
 
-from Loadtemporal_BinaryMask_train_3modality import Spoofing_train, Normaliztion, ToTensor, RandomHorizontalFlip, Cutout, RandomErasing
+from Loadtemporal_BinaryMask_train_3modality import Spoofing_train, Normaliztion, Resize, CenterCrop, ToTensor, RandomHorizontalFlip, Cutout, RandomErasing
 from Loadtemporal_valtest_3modality import Spoofing_valtest, Normaliztion_valtest, ToTensor_valtest
 
 
@@ -115,7 +115,7 @@ def train_parent():
         model.train()
         
         # load random 16-frame clip data every epoch
-        train_data = Spoofing_train(train_list, image_dir, transform=transforms.Compose([RandomErasing(), RandomHorizontalFlip(), transforms.Resize(256), transforms.CenterCrop(224), ToTensor(), Cutout(), Normaliztion()]))
+        train_data = Spoofing_train(train_list, image_dir, transform=transforms.Compose([RandomErasing(), RandomHorizontalFlip(), Resize(256), CenterCrop(224), ToTensor(), Cutout(), Normaliztion()]))
         dataloader_train = DataLoader(train_data, batch_size=args.batchsize, shuffle=True, num_workers=0)
 
         for i, sample_batched in enumerate(dataloader_train):
