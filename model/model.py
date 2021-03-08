@@ -20,8 +20,8 @@ class AlexNet(nn.Module):
 		self.alexnet_depth = models.alexnet(pretrained=True)
 		self.alexnet_ir = models.alexnet(pretrained=True)
 
-		set_trace()
-		self.fc_combined = self.remove_sequential(list(self.alexnet_rgb))[-6, -1]
+		# set_trace()
+		self.fc_combined = self.remove_sequential(self.alexnet_rgb)[-6, -1]
 
 		
 		self.alexnet_rgb = list(self.alexnet_rgb.children())[0]
