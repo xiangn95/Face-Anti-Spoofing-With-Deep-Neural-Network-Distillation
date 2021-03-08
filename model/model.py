@@ -20,10 +20,18 @@ class AlexNet(nn.Module):
 		self.alexnet_depth = models.alexnet(pretrained=True)
 		self.alexnet_ir = models.alexnet(pretrained=True)
 
-		# self.fc_rgb = nn.Linear(4096, 2)
-		# self.fc_depth = nn.Linear(4096, 2)
-		# self.fc_ir = nn.Linear(4096, 2)
-		self.fc_combined = nn.Linear(1000 * 3, 2)
+		
+		self.alexnet_rgb = list(self.alexnet_rgb.children())[0]
+		self.alexnet_depth = list(self.alexnet_depth.children())[0]
+		self.alexnet_ir = list(self.alexnet_ir.children())[0]
+
+		self.conv_1x1 = nn.Conv2d(256 * 3, 256, 1, stride=1, padding=0)
+		
+		self.avg_pool = list(self.alexnet_rgb.children())[1]
+		# self.avg_pool = self.modules[1]
+
+		self.fc_combined = self.remove_sequential(list(self.alexnet_rgb.modules()))[-6, -1]
+		self.fc_classifier = nn.Linear(4096, 2)
 
 	def forward(self, image_rgb, image_depth, image_ir):
 		output_rgb = self.alexnet_rgb(image_rgb)
@@ -35,10 +43,25 @@ class AlexNet(nn.Module):
 		output_ir = self.alexnet_ir(image_ir)
 		# output_ir = self.fc_ir(output_ir)
 
-		output_combined = torch.cat((output_rgb, output_depth, output_ir), dim=1)
+		output_combined = torch.cat((output_rgb, output_depth, output_ir), dim=0)
+		
+		output_combined = self.conv_1x1(output_combined)
+
 		output_combined = self.fc_combined(output_combined)
 
+		output_combined = self.fc_classifier(output_combined)
+
 		return output_combined
+
+	def remove_sequential(self, modules):
+		all_layers = []
+		for layer in modules:
+		    
+		    if list(layer.children()) == []: # if leaf node, add it to list
+		        all_layers.append(layer)
+		        # set_trace()
+		    
+		return all_layers
 
 class MaximumMeanDiscrepancy(nn.Module):
 	def __init__(self):
