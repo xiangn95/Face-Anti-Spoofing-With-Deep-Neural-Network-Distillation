@@ -213,8 +213,8 @@ def train_parent():
                 
 
             
-            # save the model until the next improvement
-        if epoch > 10 and epoch % epoch_test == epoch_test -1:
+        # save the model until the next improvement
+        if epoch % epoch_test == epoch_test -1:
             torch.save(model.state_dict(), args.log+'/'+args.log+'_%d.pkl' % (epoch + 1))
 
 
