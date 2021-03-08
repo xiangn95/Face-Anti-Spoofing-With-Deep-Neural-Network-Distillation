@@ -49,6 +49,8 @@ class AlexNet(nn.Module):
 		set_trace()
 		output_combined = self.conv_1x1(output_combined)
 		# set_trace()
+
+		# for layer in self.fc_combined:
 		output_combined = self.fc_combined(output_combined)
 
 		output_combined = self.fc_classifier(output_combined)
@@ -62,8 +64,9 @@ class AlexNet(nn.Module):
 		    if list(layer.children()) == []: # if leaf node, add it to list
 		        all_layers.append(layer)
 		        # set_trace()
+
 		    
-		return all_layers
+		return nn.Sequential(*all_layers)
 
 class MaximumMeanDiscrepancy(nn.Module):
 	def __init__(self):
