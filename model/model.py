@@ -20,6 +20,8 @@ class AlexNet(nn.Module):
 		self.alexnet_depth = models.alexnet(pretrained=True)
 		self.alexnet_ir = models.alexnet(pretrained=True)
 
+		self.fc_combined = self.remove_sequential(list(self.alexnet_rgb.modules()))[-6, -1]
+
 		
 		self.alexnet_rgb = list(self.alexnet_rgb.children())[0]
 		self.alexnet_depth = list(self.alexnet_depth.children())[0]
@@ -29,8 +31,7 @@ class AlexNet(nn.Module):
 		
 		self.avg_pool = list(self.alexnet_rgb.children())[1]
 		# self.avg_pool = self.modules[1]
-		set_trace()
-		self.fc_combined = self.remove_sequential(list(self.alexnet_rgb.modules()))[-6, -1]
+		# set_trace()
 		self.fc_classifier = nn.Linear(4096, 2)
 
 	def forward(self, image_rgb, image_depth, image_ir):
