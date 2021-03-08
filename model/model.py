@@ -45,7 +45,7 @@ class AlexNet(nn.Module):
 		output_ir = self.alexnet_ir(image_ir)
 		# output_ir = self.fc_ir(output_ir)
 
-		output_combined = torch.cat((output_rgb, output_depth, output_ir), dim=0)
+		output_combined = torch.cat((output_rgb, output_depth, output_ir), dim=1)
 		set_trace()
 		output_combined = self.conv_1x1(output_combined)
 		# set_trace()
