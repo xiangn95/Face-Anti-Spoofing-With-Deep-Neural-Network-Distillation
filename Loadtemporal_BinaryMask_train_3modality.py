@@ -162,28 +162,11 @@ class Resize(object):
 
     def __call__(self, sample):
         image_x, image_ir, image_depth, binary_mask, spoofing_label = sample['image_x'], sample['image_ir'], sample['image_depth'], sample['binary_mask'],sample['spoofing_label']
-        set_trace()
-        # swap color axis because
-        # numpy image: (batch_size) x H x W x C
-        # torch image: (batch_size) x C X H X W
-        image_x = image_x[:,:,::-1].transpose((2, 0, 1))
-        image_x = np.array(image_x)
         
-        image_ir = image_ir[:,:,::-1].transpose((2, 0, 1))
-        image_ir = np.array(image_ir)
-        
-        image_depth = image_depth[:,:,::-1].transpose((2, 0, 1))
-        image_depth = np.array(image_depth)
-        
-        
-        
-        binary_mask = np.array(binary_mask)
+        image_x = cv2.resize(image_x, (self.size, self.size))
+        image_ir = cv2.resize(image_ir, (self.size, self.size))
+        image_depth = cv2.resize(image_depth, (self.size, self.size))
 
-                        
-        spoofing_label_np = np.array([0],dtype=np.long)
-        spoofing_label_np[0] = spoofing_label
-        
-        
         return {'image_x': torch.from_numpy(image_x.astype(np.float)).float(), 'image_ir': torch.from_numpy(image_ir.astype(np.float)).float(), 'image_depth': torch.from_numpy(image_depth.astype(np.float)).float(), 'binary_mask': torch.from_numpy(binary_mask.astype(np.float)).float(), 'spoofing_label': torch.from_numpy(spoofing_label_np.astype(np.float)).float()}
 
 
@@ -193,28 +176,22 @@ class CenterCrop(object):
 
     def __call__(self, sample):
         image_x, image_ir, image_depth, binary_mask, spoofing_label = sample['image_x'], sample['image_ir'], sample['image_depth'], sample['binary_mask'],sample['spoofing_label']
-        set_trace()
-        # swap color axis because
-        # numpy image: (batch_size) x H x W x C
-        # torch image: (batch_size) x C X H X W
-        image_x = image_x[:,:,::-1].transpose((2, 0, 1))
-        image_x = np.array(image_x)
-        
-        image_ir = image_ir[:,:,::-1].transpose((2, 0, 1))
-        image_ir = np.array(image_ir)
-        
-        image_depth = image_depth[:,:,::-1].transpose((2, 0, 1))
-        image_depth = np.array(image_depth)
-        
-        
-        
-        binary_mask = np.array(binary_mask)
+        # set_trace()
 
-                        
-        spoofing_label_np = np.array([0],dtype=np.long)
-        spoofing_label_np[0] = spoofing_label
+        image_width, image_height, _ = image_x.shape
+        crop_height, crop_width = self.size, self.size
         
-        
+        start_width = np.random.randint(0, high=image_width-crop_width)
+        end_width = start_width + self.size
+
+        start_height = np.random.randint(0, high=image_height-crop_height)
+        end_height = start_height + self.size
+
+        image_x = image_x[start_height: end_height, start_width: end_width, :]
+        image_ir = image_ir[start_height: end_height, start_width: end_width, :]
+        image_depth = image_depth[start_height: end_height, start_width: end_width, :]
+
+        set_trace()
         return {'image_x': torch.from_numpy(image_x.astype(np.float)).float(), 'image_ir': torch.from_numpy(image_ir.astype(np.float)).float(), 'image_depth': torch.from_numpy(image_depth.astype(np.float)).float(), 'binary_mask': torch.from_numpy(binary_mask.astype(np.float)).float(), 'spoofing_label': torch.from_numpy(spoofing_label_np.astype(np.float)).float()}
 
 
