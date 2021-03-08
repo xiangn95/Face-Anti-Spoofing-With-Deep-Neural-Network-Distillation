@@ -21,7 +21,7 @@ class AlexNet(nn.Module):
 		self.alexnet_ir = models.alexnet(pretrained=True)
 
 		set_trace()
-		self.fc_combined = self.remove_sequential(list(self.alexnet_rgb.modules()))[-6, -1]
+		self.fc_combined = self.remove_sequential(list(self.alexnet_rgb))[-6, -1]
 
 		
 		self.alexnet_rgb = list(self.alexnet_rgb.children())[0]
@@ -55,9 +55,9 @@ class AlexNet(nn.Module):
 
 		return output_combined
 
-	def remove_sequential(self, modules):
+	def remove_sequential(self, network):
 		all_layers = []
-		for layer in modules:
+		for layer in network.modules():
 		    
 		    if list(layer.children()) == []: # if leaf node, add it to list
 		        all_layers.append(layer)
