@@ -50,11 +50,11 @@ class AlexNet(nn.Module):
 		output_combined = torch.cat((output_rgb, output_depth, output_ir), dim=1)
 		# set_trace()
 		output_combined = self.conv_1x1(output_combined)
-		set_trace()
+		# set_trace()
 		output_combined = self.avg_pool(output_combined)
 		output_combined = torch.reshape(output_combined, (inp_plane, -1))
 		# for layer in self.fc_combined:
-		set_trace()
+		# set_trace()
 		output_combined = self.fc_combined(output_combined)
 
 		output_combined = self.fc_classifier(output_combined)
