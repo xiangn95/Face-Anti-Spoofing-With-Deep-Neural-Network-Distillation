@@ -333,7 +333,7 @@ def train_student():
 
             mmd_loss = MMDloss(output_1, output_2)
             similarity_loss = Simloss(output_1, output_2, spoof_label, spoof_label)
-            ce_loss = CEloss(output_2, spoof_label.long().squeeze(1))
+            ce_loss = CEloss(output_2, F.softmax(output_1))
             # set_trace()
             # loss =  absolute_loss + contrastive_loss
             loss = ce_loss + mmd_loss + similarity_loss
@@ -347,7 +347,7 @@ def train_student():
             loss_Sim.update(similarity_loss, n)
             loss_CE.update(ce_loss, n)
             # set_trace()
-            accu.append(accuracy(output, spoof_label.long().squeeze(1))[0].item())
+            accu.append(accuracy(output_2, spoof_label.long().squeeze(1))[0].item())
         
 
             if i % echo_batches == echo_batches-1:    # print every 50 mini-batches
