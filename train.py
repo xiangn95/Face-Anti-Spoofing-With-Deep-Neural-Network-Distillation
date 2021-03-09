@@ -98,10 +98,11 @@ def train_parent():
     ACER_save = 1.0
     
     for epoch in range(args.epochs):  # loop over the dataset multiple times
+        
+        train_accu = []
+        val_accu = []
+        
 
-    	train_accu = []
-    	val_accu = []
-        # scheduler.step()
         if (epoch + 1) % args.step_size == 0:
             lr *= args.gamma
 
@@ -192,10 +193,10 @@ def train_parent():
                 # inputs = sample_batched['image_x'].cuda()
                 # inputs_ir, inputs_depth = sample_batched['image_ir'].cuda(), sample_batched['image_depth'].cuda()
                 # string_name, binary_mask = sample_batched['string_name'], sample_batched['binary_mask'].cuda()
-    			
-    			inputs, binary_mask, spoof_label = sample_batched['image_x'].cuda(), sample_batched['binary_mask'].cuda(), sample_batched['spoofing_label'].cuda() 
-            	inputs_ir, inputs_depth = sample_batched['image_ir'].cuda(), sample_batched['image_depth'].cuda()
-            	string_name = sample_batched['string_name']
+                
+                inputs, binary_mask, spoof_label = sample_batched['image_x'].cuda(), sample_batched['binary_mask'].cuda(), sample_batched['spoofing_label'].cuda()
+                inputs_ir, inputs_depth = sample_batched['image_ir'].cuda(), sample_batched['image_depth'].cuda()
+                string_name = sample_batched['string_name']
 
                 # optimizer.zero_grad()
                 
