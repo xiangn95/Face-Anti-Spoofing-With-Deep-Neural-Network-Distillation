@@ -272,10 +272,11 @@ def train_student():
          
         #model = CDCN_3modality2( basic_conv=Conv2d_cd, theta=0.7)
         # model = CDCN_3modality2( basic_conv=Conv2d_cd, theta=args.theta)
-        model = AlexNet()
+        model_1 = AlexNet()
+        model_1 = model.cuda()
 
-        model = model.cuda()
-
+        model_2 = AlexNet()
+        model_2 = model.cuda()
 
         lr = args.lr
         optimizer = optim.SGD(model.parameters(), lr=0.0001, weight_decay=0.0005,momentum=0.9)
@@ -286,6 +287,8 @@ def train_student():
     
     # criterion_absolute_loss = nn.MSELoss().cuda()
     # criterion_contrastive_loss = Contrast_depth_loss().cuda() 
+    MMDloss = MaximumMeanDiscrepancy().cuda()
+    Simloss = SimilarityEmbedding().cuda()
     CEloss = nn.CrossEntropyLoss().cuda()
 
 
@@ -297,8 +300,8 @@ def train_student():
             lr *= args.gamma
 
         
-        # loss_absolute = AvgrageMeter()
-        # loss_contra =  AvgrageMeter()
+        loss_MMD = AvgrageMeter()
+        loss_Sim =  AvgrageMeter()
         loss_CE = AvgrageMeter()
         #top5 = utils.AvgrageMeter()
         
@@ -306,7 +309,8 @@ def train_student():
         ###########################################
         '''                train             '''
         ###########################################
-        model.train()
+        model_1.eval()
+        model_2.train()
         
         # load random 16-frame clip data every epoch
         train_data = Spoofing_train(train_list, image_dir, transform=transforms.Compose([RandomErasing(), RandomHorizontalFlip(),  ToTensor(), Cutout(), Normaliztion()]))
@@ -324,23 +328,24 @@ def train_student():
             # forward + backward + optimize
             # map_x, embedding, x_Block1, x_Block2, x_Block3, x_input =  model(inputs, inputs_ir, inputs_depth)
             #map_x, embedding, x_Block1, x_Block2, x_Block3, x_input =  model(inputs, inputs_depth)
+            output_1 = model_1(inputs, inputs_depth, inputs_ir)
+            output_2 = model_2(inputs, inputs_depth, inputs_ir)
 
-            output = model(inputs, inputs_depth, inputs_ir)
-            #pdb.set_trace()
-            # absolute_loss = criterion_absolute_loss(map_x, binary_mask)
-            # contrastive_loss = criterion_contrastive_loss(map_x, binary_mask)
+            mmd_loss = MMDloss(output_1, output_2)
+            similarity_loss = Simloss(output_1, output_2, spoof_label, spoof_label)
+            ce_loss = CEloss(output_2, spoof_label.long().squeeze(1))
             # set_trace()
             # loss =  absolute_loss + contrastive_loss
-            loss = CEloss(output, spoof_label.long().squeeze(1))
+            loss = ce_loss + mmd_loss + similarity_loss
 
             loss.backward()
             
             optimizer.step()
             
             n = inputs.size(0)
-            # loss_absolute.update(absolute_loss.data, n)
-            # loss_contra.update(contrastive_loss.data, n)
-            loss_CE.update(loss, n)
+            loss_MMD.update(mmd_loss, n)
+            loss_Sim.update(similarity_loss, n)
+            loss_CE.update(ce_loss, n)
             # set_trace()
             accu.append(accuracy(output, spoof_label.long().squeeze(1))[0].item())
         
@@ -352,14 +357,15 @@ def train_student():
 
                 # log written
                 # set_trace()
-                print('epoch:%d, mini-batch:%3d, lr=%f, CE_loss= %.4f, accuracy= %.4f' % (epoch + 1, i + 1, lr,  loss_CE.avg, accu[i]))
+                print('epoch:%d, mini-batch:%3d, lr=%f, CE_loss= %.4f, MMD_loss= %.4f, Sim_loss= %.4f, accuracy= %.4f' % (epoch + 1, i + 1, lr, \
+                  loss_CE.avg, loss_MMD.avg, loss_Sim.avg, accu[i]))
         
             #break            
         
         # scheduler.step()  
         # whole epoch average
-        print('epoch:%d, Train: CE_loss= %.4f, accuracy= %.4f' % (epoch + 1, loss_CE.avg, sum(accu)/len(accu)))
-        log_file.write('epoch:%d, Train: CE_loss= %.4f, accuracy= %.4f' % (epoch + 1, loss_CE.avg, sum(accu)/len(accu)))
+        print('epoch:%d, Train: CE_loss= %.4f, MMD_loss= %.4f, Sim_loss= %.4f, accuracy= %.4f' % (epoch + 1, loss_CE.avg, loss_MMD.avg, loss_Sim.avg, sum(accu)/len(accu)))
+        log_file.write('epoch:%d, Train: CE_loss= %.4f, MMD_loss= %.4f, Sim_loss= %.4f, accuracy= %.4f' % (epoch + 1, loss_CE.avg, loss_MMD.avg, loss_Sim.avg, sum(accu)/len(accu)))
         log_file.flush()
            
     
@@ -408,8 +414,8 @@ def train_student():
 
             
             # save the model until the next improvement
-        if epoch > 10 and epoch % epoch_test == epoch_test -1:
-            torch.save(model.state_dict(), args.log+'/'+args.log+'_%d.pkl' % (epoch + 1))
+        # if epoch > 10 and epoch % epoch_test == epoch_test -1:
+        torch.save(model.state_dict(), args.log+'/'+args.log+'_%d.pkl' % (epoch + 1))
 
 
     print('Finished Training')
