@@ -16,7 +16,7 @@ from model.model import AlexNet, MaximumMeanDiscrepancy, SimilarityEmbedding
 
 
 from Loadtemporal_BinaryMask_train_3modality import Spoofing_train, Normaliztion, Resize, CenterCrop, ToTensor, RandomHorizontalFlip, Cutout, RandomErasing
-from Loadtemporal_valtest_3modality import Spoofing_valtest, Normaliztion_valtest, ToTensor_valtest
+from Loadtemporal_valtest_3modality import Spoofing_valtest, Resize_val, CenterCrop_val, Normaliztion_valtest, ToTensor_valtest
 
 
 import torch.nn.functional as F
@@ -52,7 +52,7 @@ val_list = '/home/Disk1T/hxy/CASIA-CeFA/CASIA-CeFA/phase1/4@1_dev_res.txt'
 def train_parent():
     # GPU  & log file  -->   if use DataParallel, please comment this command
     #os.environ["CUDA_VISIBLE_DEVICES"] = "%d" % (args.gpu)
-
+    save_epoch = 2
     isExists = os.path.exists(args.log)
     if not isExists:
         os.makedirs(args.log)
@@ -96,8 +96,11 @@ def train_parent():
 
 
     ACER_save = 1.0
-    accu = []
+    
     for epoch in range(args.epochs):  # loop over the dataset multiple times
+
+    	train_accu = []
+    	val_accu = []
         # scheduler.step()
         if (epoch + 1) % args.step_size == 0:
             lr *= args.gamma
@@ -105,7 +108,8 @@ def train_parent():
         
         # loss_absolute = AvgrageMeter()
         # loss_contra =  AvgrageMeter()
-        loss_CE = AvgrageMeter()
+        train_loss_CE = AvgrageMeter()
+        val_loss_CE = AvgrageMeter()
         #top5 = utils.AvgrageMeter()
         
         
@@ -146,9 +150,9 @@ def train_parent():
             n = inputs.size(0)
             # loss_absolute.update(absolute_loss.data, n)
             # loss_contra.update(contrastive_loss.data, n)
-            loss_CE.update(loss, n)
+            train_loss_CE.update(loss, n)
             # set_trace()
-            accu.append(accuracy(output, spoof_label.long().squeeze(1))[0].item())
+            train_accu.append(accuracy(output, spoof_label.long().squeeze(1))[0].item())
         
 
             if i % echo_batches == echo_batches-1:    # print every 50 mini-batches
@@ -158,63 +162,77 @@ def train_parent():
 
                 # log written
                 # set_trace()
-                print('epoch:%d, mini-batch:%3d, lr=%f, CE_loss= %.4f, accuracy= %.4f' % (epoch + 1, i + 1, lr,  loss_CE.avg, accu[i]))
+                print('epoch:%d, mini-batch:%3d, lr=%f, CE_loss= %.4f, accuracy= %.4f' % (epoch + 1, i + 1, lr,  train_loss_CE.avg, train_accu[i]))
         
             #break            
         
         # scheduler.step()  
         # whole epoch average
-        print('epoch:%d, Train: CE_loss= %.4f' % (epoch + 1, loss_CE.avg))
-        log_file.write('epoch:%d, Train: CE_loss= %.4f, accuracy= %.4f' % (epoch + 1, loss_CE.avg, sum(accu)/len(accu)))
+        print('epoch:%d, Train: CE_loss= %.4f, accuracy = %.4f' % (epoch + 1, train_loss_CE.avg, sum(train_accu)/len(train_accu)))
+        log_file.write('epoch:%d, Train: CE_loss= %.4f, accuracy= %.4f' % (epoch + 1, train_loss_CE.avg, sum(train_accu)/len(train_accu)))
         log_file.flush()
            
     
             
         # epoch_test = 1
         # if epoch>10 and epoch % epoch_test == epoch_test-1:   
-        # #if epoch>-1 and epoch % epoch_test == epoch_test-1:  
-        #     model.eval()
-            
-        #     with torch.no_grad():
-        #         ###########################################
-        #         '''                val             '''
-        #         ###########################################
-        #         # val for threshold
-        #         val_data = Spoofing_valtest(val_list, image_dir, transform=transforms.Compose([Normaliztion_valtest(), ToTensor_valtest()]))
-        #         dataloader_val = DataLoader(val_data, batch_size=1, shuffle=False, num_workers=0)
-                
-        #         map_score_list = []
-                
-        #         for i, sample_batched in enumerate(dataloader_val):
-        #             # get the inputs
-        #             inputs = sample_batched['image_x'].cuda()
-        #             inputs_ir, inputs_depth = sample_batched['image_ir'].cuda(), sample_batched['image_depth'].cuda()
-        #             string_name, binary_mask = sample_batched['string_name'], sample_batched['binary_mask'].cuda()
+        #if epoch>-1 and epoch % epoch_test == epoch_test-1:  
+        model.eval()
         
-        #             optimizer.zero_grad()
-                    
-                    
-        #             map_score = 0.0
-        #             for frame_t in range(inputs.shape[1]):
-        #                 map_x, embedding, x_Block1, x_Block2, x_Block3, x_input =  model(inputs[:,frame_t,:,:,:], inputs_ir[:,frame_t,:,:,:], inputs_depth[:,frame_t,:,:,:])
-        #                 #map_x, embedding, x_Block1, x_Block2, x_Block3, x_input =  model(inputs[:,frame_t,:,:,:], inputs_depth[:,frame_t,:,:,:])
-        #                 score_norm = torch.sum(map_x)/torch.sum(binary_mask[:,frame_t,:,:])
-        #                 map_score += score_norm
-        #             map_score = map_score/inputs.shape[1]
-                    
-        #             if map_score>1:
-        #                 map_score = 1.0
-    
-        #             map_score_list.append('{} {}\n'.format( string_name[0], map_score ))
-                    
-        #         map_score_val_filename = args.log+'/'+ args.log+ '_map_score_val_%d.txt'% (epoch + 1)
-        #         with open(map_score_val_filename, 'w') as file:
-        #             file.writelines(map_score_list)                
+        with torch.no_grad():
+            ###########################################
+            '''                val             '''
+            ###########################################
+            # val for threshold
+            val_data = Spoofing_valtest(val_list, image_dir, transform=transforms.Compose([Resize(256), CenterCrop(224), Normaliztion_valtest(), ToTensor_valtest()]))
+            dataloader_val = DataLoader(val_data, batch_size=1, shuffle=False, num_workers=0)
+                        
+            for i, sample_batched in enumerate(dataloader_val):
+                # get the inputs
+                # inputs = sample_batched['image_x'].cuda()
+                # inputs_ir, inputs_depth = sample_batched['image_ir'].cuda(), sample_batched['image_depth'].cuda()
+                # string_name, binary_mask = sample_batched['string_name'], sample_batched['binary_mask'].cuda()
+    			
+    			inputs, binary_mask, spoof_label = sample_batched['image_x'].cuda(), sample_batched['binary_mask'].cuda(), sample_batched['spoofing_label'].cuda() 
+            	inputs_ir, inputs_depth = sample_batched['image_ir'].cuda(), sample_batched['image_depth'].cuda()
+            	string_name = sample_batched['string_name']
+
+                # optimizer.zero_grad()
+                
+                output = model(inputs, inputs_depth, inputs_ir)
+
+
+                loss = CEloss(output, spoof_label.long().squeeze(1))
+
+                n = inputs.size(0)
+                val_loss_CE.update(loss, n)
+
+                val_accu.append(accuracy(output, spoof_label.long().squeeze(1))[0].item())
+
+        print('epoch:%d, Validation: CE_loss= %.4f' % (epoch + 1, val_loss_CE.avg))
+        log_file.write('epoch:%d, Train: CE_loss= %.4f, accuracy= %.4f' % (epoch + 1, val_loss_CE.avg, sum(train_accu)/len(train_accu)))
+
+            #     map_score = 0.0
+            #     for frame_t in range(inputs.shape[1]):
+            #         map_x, embedding, x_Block1, x_Block2, x_Block3, x_input =  model(inputs[:,frame_t,:,:,:], inputs_ir[:,frame_t,:,:,:], inputs_depth[:,frame_t,:,:,:])
+            #         #map_x, embedding, x_Block1, x_Block2, x_Block3, x_input =  model(inputs[:,frame_t,:,:,:], inputs_depth[:,frame_t,:,:,:])
+            #         score_norm = torch.sum(map_x)/torch.sum(binary_mask[:,frame_t,:,:])
+            #         map_score += score_norm
+            #     map_score = map_score/inputs.shape[1]
+                
+            #     if map_score>1:
+            #         map_score = 1.0
+
+            #     map_score_list.append('{} {}\n'.format( string_name[0], map_score ))
+                
+            # map_score_val_filename = args.log+'/'+ args.log+ '_map_score_val_%d.txt'% (epoch + 1)
+            # with open(map_score_val_filename, 'w') as file:
+            #     file.writelines(map_score_list)                
                 
 
             
         # save the model until the next improvement
-        if epoch % epoch_test == epoch_test -1:
+        if (epoch+1) % save_epoch == 0:
             torch.save(model.state_dict(), args.log+'/'+args.log+'_%d.pkl' % (epoch + 1))
 
 

@@ -17,6 +17,50 @@ import os
 frames_total = 8    # each video 8 uniform samples
 
 
+
+class Resize_val(object):
+    """
+        Convert ndarrays in sample to Tensors.
+        process only one batch every time
+    """
+    def __init__(self, size=256):
+        self.size = size
+
+    def __call__(self, sample):
+        image_x, image_ir, image_depth, binary_mask, spoofing_label = sample['image_x'], sample['image_ir'], sample['image_depth'], sample['binary_mask'],sample['spoofing_label']
+        string_name = sample['string_name']
+
+        image_x = cv2.resize(image_x, (self.size, self.size))
+        image_ir = cv2.resize(image_ir, (self.size, self.size))
+        image_depth = cv2.resize(image_depth, (self.size, self.size))
+
+        return {'image_x': image_x,'image_ir': image_ir,'image_depth': image_depth, 'binary_mask': binary_mask, 'spoofing_label': spoofing_label, "string_name":string_name}
+
+class CenterCrop_val(object):
+    def __init__(self, size=224):
+        self.size=size
+
+    def __call__(self, sample):
+        image_x, image_ir, image_depth, binary_mask, spoofing_label = sample['image_x'], sample['image_ir'], sample['image_depth'], sample['binary_mask'],sample['spoofing_label']
+        # set_trace()
+        string_name = sample['string_name']
+
+        image_width, image_height, _ = image_x.shape
+        crop_height, crop_width = self.size, self.size
+        
+        start_width = np.random.randint(0, high=image_width-crop_width)
+        end_width = start_width + self.size
+
+        start_height = np.random.randint(0, high=image_height-crop_height)
+        end_height = start_height + self.size
+
+        image_x = image_x[start_height: end_height, start_width: end_width, :]
+        image_ir = image_ir[start_height: end_height, start_width: end_width, :]
+        image_depth = image_depth[start_height: end_height, start_width: end_width, :]
+
+        # set_trace()
+        return {'image_x': image_x,'image_ir': image_ir,'image_depth': image_depth, 'binary_mask': binary_mask, 'spoofing_label': spoofing_label, "string_name":string_name}
+
 class Normaliztion_valtest(object):
     """
         same as mxnet, normalize into [-1, 1]
@@ -24,12 +68,13 @@ class Normaliztion_valtest(object):
     """
     def __call__(self, sample):
         image_x, image_ir, image_depth, binary_mask, string_name = sample['image_x'], sample['image_ir'], sample['image_depth'],sample['binary_mask'],sample['string_name']
-        
+        spoofing_label = sample['spoofing_label']
+
         new_image_x = (image_x - 127.5)/128     # [-1,1]
         new_image_ir = (image_ir - 127.5)/128     # [-1,1]
         new_image_depth = (image_depth - 127.5)/128     # [-1,1]
         
-        return {'image_x': new_image_x,'image_ir': new_image_ir,'image_depth': new_image_depth, 'binary_mask': binary_mask, 'string_name': string_name}
+        return {'image_x': new_image_x,'image_ir': new_image_ir,'image_depth': new_image_depth, 'binary_mask': binary_mask, 'spoofing_label': spoofing_label, 'string_name': string_name}
 
 
 class ToTensor_valtest(object):
@@ -41,6 +86,7 @@ class ToTensor_valtest(object):
     def __call__(self, sample):
         image_x, image_ir, image_depth, binary_mask, string_name = sample['image_x'], sample['image_ir'], sample['image_depth'],sample['binary_mask'],sample['string_name']
         
+        spoofing_label = sample['spoofing_label']
         # swap color axis because    BGR2RGB
         # numpy image: (batch_size) x T x H x W x C
         # torch image: (batch_size) x T x C X H X W
@@ -55,7 +101,7 @@ class ToTensor_valtest(object):
                         
         binary_mask = np.array(binary_mask)
         
-        return {'image_x': torch.from_numpy(image_x.astype(np.float)).float(), 'image_ir': torch.from_numpy(image_ir.astype(np.float)).float(), 'image_depth': torch.from_numpy(image_depth.astype(np.float)).float(), 'binary_mask': torch.from_numpy(binary_mask.astype(np.float)).float(), 'string_name': string_name} 
+        return {'image_x': torch.from_numpy(image_x.astype(np.float)).float(), 'image_ir': torch.from_numpy(image_ir.astype(np.float)).float(), 'image_depth': torch.from_numpy(image_depth.astype(np.float)).float(), 'binary_mask': torch.from_numpy(binary_mask.astype(np.float)).float(), 'spoofing_label': spoofing_label, 'string_name': string_name} 
 
 
 
@@ -80,9 +126,19 @@ class Spoofing_valtest(Dataset):
         depth_path = os.path.join(image_path, 'depth')
              
         image_x, image_ir, image_depth, binary_mask = self.get_single_image_x(image_path2, ir_path, depth_path, videoname)
-		    
+		
+
+        spoofing_label = self.landmarks_frame.iloc[idx, 1]
+        if spoofing_label == 1:
+            spoofing_label = 1            # real
+        else:
+            spoofing_label = 0            # fake
+            binary_mask = np.zeros((32, 32))    
+        
+        
+        #frequency_label = self.landmarks_frame.iloc[idx, 2:2+50].values  
             
-        sample = {'image_x': image_x,'image_ir': image_ir,'image_depth': image_depth, 'binary_mask': binary_mask, 'string_name': videoname}
+        sample = {'image_x': image_x,'image_ir': image_ir,'image_depth': image_depth, 'binary_mask': binary_mask, 'spoofing_label': spoofing_label, 'string_name': videoname}
 
         if self.transform:
             sample = self.transform(sample)
