@@ -165,7 +165,7 @@ def train_parent():
                 # set_trace()
                 print('epoch:%d, mini-batch:%3d, lr=%f, CE_loss= %.4f, accuracy= %.4f' % (epoch + 1, i + 1, lr,  train_loss_CE.avg, train_accu[i]))
         
-            #break            
+            break            
         
         # scheduler.step()  
         # whole epoch average
