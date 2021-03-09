@@ -210,7 +210,7 @@ def train_parent():
                 val_accu.append(accuracy(output, spoof_label.long().squeeze(1))[0].item())
 
         print('epoch:%d, Validation: CE_loss= %.4f' % (epoch + 1, val_loss_CE.avg))
-        log_file.write('epoch:%d, Train: CE_loss= %.4f, accuracy= %.4f' % (epoch + 1, val_loss_CE.avg, sum(train_accu)/len(train_accu)))
+        log_file.write('epoch:%d, Validation: CE_loss= %.4f, accuracy= %.4f' % (epoch + 1, val_loss_CE.avg, sum(train_accu)/len(train_accu)))
 
             #     map_score = 0.0
             #     for frame_t in range(inputs.shape[1]):
