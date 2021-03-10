@@ -202,7 +202,7 @@ def train_parent():
                 
                 output = model(inputs, inputs_depth, inputs_ir)
 
-                set_trace()
+                # set_trace()
                 loss = CEloss(output, spoof_label.long())
 
                 n = inputs.size(0)
