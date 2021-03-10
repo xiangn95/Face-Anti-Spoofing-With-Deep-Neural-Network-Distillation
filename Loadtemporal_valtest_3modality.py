@@ -32,7 +32,7 @@ class Resize_val(object):
         image_x, image_ir, image_depth, binary_mask, spoofing_label = sample['image_x'], sample['image_ir'], sample['image_depth'], sample['binary_mask'],sample['spoofing_label']
         string_name = sample['string_name']
 
-        set_trace()
+        # set_trace()
         image_x = cv2.resize(image_x, (self.size, self.size))
         image_ir = cv2.resize(image_ir, (self.size, self.size))
         image_depth = cv2.resize(image_depth, (self.size, self.size))
