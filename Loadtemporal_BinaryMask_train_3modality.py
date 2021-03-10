@@ -162,7 +162,7 @@ class Resize(object):
 
     def __call__(self, sample):
         image_x, image_ir, image_depth, binary_mask, spoofing_label = sample['image_x'], sample['image_ir'], sample['image_depth'], sample['binary_mask'],sample['spoofing_label']
-        set_trace()
+        # set_trace()
         image_x = cv2.resize(image_x, (self.size, self.size))
         image_ir = cv2.resize(image_ir, (self.size, self.size))
         image_depth = cv2.resize(image_depth, (self.size, self.size))
@@ -251,7 +251,7 @@ class Spoofing_train(Dataset):
         videoname_depth = videoname[:18] + 'depth/' + videoname[-8:]
         depth_path = os.path.join(self.root_dir, videoname_depth)
     
-        set_trace()
+        # set_trace()
              
         image_x, image_ir, image_depth, binary_mask = self.get_single_image_x(image_path, ir_path, depth_path)
         

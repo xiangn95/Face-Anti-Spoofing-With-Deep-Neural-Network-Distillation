@@ -158,7 +158,7 @@ class Spoofing_valtest(Dataset):
         
         binary_mask = np.zeros((frames_total, 32, 32))
         
-        
+        set_trace()
         
         # random choose 1 frame
         for ii in range(frames_total):
