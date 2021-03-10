@@ -13,6 +13,8 @@ import pdb
 import math
 import os 
 
+from pdb import set_trace
+
 
 frames_total = 8    # each video 8 uniform samples
 
@@ -127,7 +129,7 @@ class Spoofing_valtest(Dataset):
              
         image_x, image_ir, image_depth, binary_mask = self.get_single_image_x(image_path2, ir_path, depth_path, videoname)
 		
-
+        # set_trace()
         spoofing_label = self.landmarks_frame.iloc[idx, 1]
         if spoofing_label == 1:
             spoofing_label = 1            # real
