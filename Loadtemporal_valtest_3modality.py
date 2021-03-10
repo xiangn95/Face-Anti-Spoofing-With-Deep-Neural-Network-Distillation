@@ -93,13 +93,13 @@ class ToTensor_valtest(object):
         # swap color axis because    BGR2RGB
         # numpy image: (batch_size) x T x H x W x C
         # torch image: (batch_size) x T x C X H X W
-        image_x = image_x[:,:,:,::-1].transpose((0, 3, 1, 2))
+        image_x = image_x[:,:,::-1].transpose((2, 0, 1))
         image_x = np.array(image_x)
         
-        image_ir = image_ir[:,:,:,::-1].transpose((0, 3, 1, 2))
+        image_ir = image_ir[:,:,::-1].transpose((2, 0, 1))
         image_ir = np.array(image_ir)
         
-        image_depth = image_depth[:,:,:,::-1].transpose((0, 3, 1, 2))
+        image_depth = image_depth[:,:,::-1].transpose((2, 0, 1))
         image_depth = np.array(image_depth)
                         
         binary_mask = np.array(binary_mask)
