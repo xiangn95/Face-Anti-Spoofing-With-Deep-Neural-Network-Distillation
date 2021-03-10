@@ -246,7 +246,7 @@ def train_parent():
 def train_student():
     # GPU  & log file  -->   if use DataParallel, please comment this command
     os.environ["CUDA_VISIBLE_DEVICES"] = "%d" % (args.gpu)
-
+    save_epoch = 2
     isExists = os.path.exists(args.log)
     if not isExists:
         os.makedirs(args.log)
@@ -415,7 +415,8 @@ def train_student():
             
             # save the model until the next improvement
         # if epoch > 10 and epoch % epoch_test == epoch_test -1:
-        torch.save(model.state_dict(), args.log+'/'+args.log+'_%d.pkl' % (epoch + 1))
+        if (epoch+1) % save_epoch == 0:
+            torch.save(model.state_dict(), args.log+'/'+args.log+'_%d.pkl' % (epoch + 1))
 
 
     print('Finished Training')
@@ -439,4 +440,5 @@ if __name__ == "__main__":
     parser.add_argument('--theta', type=float, default=0.7, help='hyper-parameters in CDCNpp')
 	
     args = parser.parse_args()
-    train_parent()
+    # train_parent()
+    train_children()
