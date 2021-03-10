@@ -51,7 +51,7 @@ val_list = '/home/Disk1T/hxy/CASIA-CeFA/CASIA-CeFA/phase1/4@1_dev_ref.txt'
 # main function
 def train_parent():
     # GPU  & log file  -->   if use DataParallel, please comment this command
-    #os.environ["CUDA_VISIBLE_DEVICES"] = "%d" % (args.gpu)
+    os.environ["CUDA_VISIBLE_DEVICES"] = "%d" % (args.gpu)
     save_epoch = 2
     isExists = os.path.exists(args.log)
     if not isExists:
