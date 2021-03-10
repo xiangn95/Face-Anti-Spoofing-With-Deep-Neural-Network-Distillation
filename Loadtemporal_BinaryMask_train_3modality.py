@@ -251,7 +251,7 @@ class Spoofing_train(Dataset):
         videoname_depth = videoname[:18] + 'depth/' + videoname[-8:]
         depth_path = os.path.join(self.root_dir, videoname_depth)
     
-    
+        set_trace()
              
         image_x, image_ir, image_depth, binary_mask = self.get_single_image_x(image_path, ir_path, depth_path)
         
