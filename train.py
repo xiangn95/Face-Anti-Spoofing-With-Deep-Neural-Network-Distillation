@@ -245,7 +245,7 @@ def train_parent():
 # main function
 def train_student():
     # GPU  & log file  -->   if use DataParallel, please comment this command
-    #os.environ["CUDA_VISIBLE_DEVICES"] = "%d" % (args.gpu)
+    os.environ["CUDA_VISIBLE_DEVICES"] = "%d" % (args.gpu)
 
     isExists = os.path.exists(args.log)
     if not isExists:
