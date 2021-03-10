@@ -203,12 +203,12 @@ def train_parent():
                 output = model(inputs, inputs_depth, inputs_ir)
 
                 set_trace()
-                loss = CEloss(output, spoof_label.long().squeeze(1))
+                loss = CEloss(output, spoof_label.long())
 
                 n = inputs.size(0)
                 val_loss_CE.update(loss, n)
 
-                val_accu.append(accuracy(output, spoof_label.long().squeeze(1))[0].item())
+                val_accu.append(accuracy(output, spoof_label.long())[0].item())
 
         print('epoch:%d, Validation: CE_loss= %.4f' % (epoch + 1, val_loss_CE.avg))
         log_file.write('epoch:%d, Validation: CE_loss= %.4f, accuracy= %.4f' % (epoch + 1, val_loss_CE.avg, sum(train_accu)/len(train_accu)))
