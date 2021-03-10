@@ -185,7 +185,7 @@ def train_parent():
             '''                val             '''
             ###########################################
             # val for threshold
-            val_data = Spoofing_valtest(val_list, image_dir, transform=transforms.Compose([Resize(256), CenterCrop(224), Normaliztion_valtest(), ToTensor_valtest()]))
+            val_data = Spoofing_valtest(val_list, image_dir, transform=transforms.Compose([Resize_val(256), CenterCrop_val(224), Normaliztion_valtest(), ToTensor_valtest()]))
             dataloader_val = DataLoader(val_data, batch_size=1, shuffle=False, num_workers=0)
                         
             for i, sample_batched in enumerate(dataloader_val):
