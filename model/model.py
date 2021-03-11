@@ -57,9 +57,9 @@ class AlexNet(nn.Module):
 		# set_trace()
 		output_combined = self.fc_combined(output_combined)
 
-		output_combined = self.fc_classifier(output_combined)
+		output_classify = self.fc_classifier(output_combined)
 		# set_trace()
-		return output_combined
+		return output_classify, output_combined
 
 	def remove_sequential(self, network):
 		all_layers = []

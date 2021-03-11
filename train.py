@@ -53,10 +53,10 @@ def train_parent():
     # GPU  & log file  -->   if use DataParallel, please comment this command
     os.environ["CUDA_VISIBLE_DEVICES"] = "%d" % (args.gpu)
     save_epoch = 2
-    isExists = os.path.exists(args.log)
+    isExists = os.path.exists(args.teacher_log)
     if not isExists:
-        os.makedirs(args.log)
-    log_file = open(args.log+'/'+ args.log+'_log.txt', 'w')
+        os.makedirs(args.teacher_log)
+    log_file = open(args.teacher_log+'/'+ args.teacher_log+'_log.txt', 'w')
     
     echo_batches = args.echo_batches
 
@@ -136,7 +136,7 @@ def train_parent():
             # map_x, embedding, x_Block1, x_Block2, x_Block3, x_input =  model(inputs, inputs_ir, inputs_depth)
             #map_x, embedding, x_Block1, x_Block2, x_Block3, x_input =  model(inputs, inputs_depth)
 
-            output = model(inputs, inputs_depth, inputs_ir)
+            output, _ = model(inputs, inputs_depth, inputs_ir)
             #pdb.set_trace()
             # absolute_loss = criterion_absolute_loss(map_x, binary_mask)
             # contrastive_loss = criterion_contrastive_loss(map_x, binary_mask)
@@ -200,7 +200,7 @@ def train_parent():
 
                 # optimizer.zero_grad()
                 
-                output = model(inputs, inputs_depth, inputs_ir)
+                output, _ = model(inputs, inputs_depth, inputs_ir)
 
                 # set_trace()
                 loss = CEloss(output, spoof_label.long())
@@ -234,7 +234,7 @@ def train_parent():
             
         # save the model until the next improvement
         if (epoch+1) % save_epoch == 0:
-            torch.save(model.state_dict(), args.log+'/'+args.log+'_%d.pkl' % (epoch + 1))
+            torch.save(model.state_dict(), args.teacher_log+'/'+args.teacher_log+'_%d.pkl' % (epoch + 1))
 
 
     print('Finished Training')
@@ -247,10 +247,10 @@ def train_student():
     # GPU  & log file  -->   if use DataParallel, please comment this command
     os.environ["CUDA_VISIBLE_DEVICES"] = "%d" % (args.gpu)
     save_epoch = 2
-    isExists = os.path.exists(args.log)
+    isExists = os.path.exists(args.student_log)
     if not isExists:
-        os.makedirs(args.log)
-    log_file = open(args.log+'/'+ args.log+'_log.txt', 'w')
+        os.makedirs(args.student_log)
+    log_file = open(args.student_log+'/'+ args.student_log+'_log.txt', 'w')
     
     echo_batches = args.echo_batches
 
@@ -273,16 +273,16 @@ def train_student():
         #model = CDCN_3modality2( basic_conv=Conv2d_cd, theta=0.7)
         # model = CDCN_3modality2( basic_conv=Conv2d_cd, theta=args.theta)
         model_1 = AlexNet()
-        model_1 = model.cuda()
+        model_1 = model_1.cuda()
 
         model_2 = AlexNet()
-        model_2 = model.cuda()
+        model_2 = model_2.cuda()
 
         lr = args.lr
-        optimizer = optim.SGD(model.parameters(), lr=0.0001, weight_decay=0.0005,momentum=0.9)
+        optimizer = optim.SGD(model_2.parameters(), lr=0.0001, weight_decay=0.0005,momentum=0.9)
         # scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=args.step_size, gamma=args.gamma)
     
-    print(model) 
+    print(model_2) 
     
     
     # criterion_absolute_loss = nn.MSELoss().cuda()
@@ -328,15 +328,17 @@ def train_student():
             # forward + backward + optimize
             # map_x, embedding, x_Block1, x_Block2, x_Block3, x_input =  model(inputs, inputs_ir, inputs_depth)
             #map_x, embedding, x_Block1, x_Block2, x_Block3, x_input =  model(inputs, inputs_depth)
-            output_1 = model_1(inputs, inputs_depth, inputs_ir)
-            output_2 = model_2(inputs, inputs_depth, inputs_ir)
-
-            mmd_loss = MMDloss(output_1, output_2)
-            similarity_loss = Simloss(output_1, output_2, spoof_label, spoof_label)
-            ce_loss = CEloss(output_2, F.softmax(output_1))
+            output_1, output_feat_1 = model_1(inputs, inputs_depth, inputs_ir)
+            output_2, output_feat_2 = model_2(inputs, inputs_depth, inputs_ir)
+            
+            #set_trace()
+            mmd_loss = MMDloss(output_feat_1, output_feat_2)
+            similarity_loss = Simloss(output_feat_1, output_feat_2, spoof_label, spoof_label)
+            # ce_loss = CEloss(output_2, torch.max(F.softmax(output_1), dim=1).values.data.long())
+            ce_loss = CEloss(output_2, spoof_label.long().squeeze(1))
             # set_trace()
             # loss =  absolute_loss + contrastive_loss
-            loss = ce_loss + mmd_loss + similarity_loss
+            loss = ce_loss + 0.001 * mmd_loss + similarity_loss
 
             loss.backward()
             
@@ -416,7 +418,7 @@ def train_student():
             # save the model until the next improvement
         # if epoch > 10 and epoch % epoch_test == epoch_test -1:
         if (epoch+1) % save_epoch == 0:
-            torch.save(model.state_dict(), args.log+'/'+args.log+'_%d.pkl' % (epoch + 1))
+            torch.save(model_2.state_dict(), args.student_log+'/'+args.student_log+'_%d.pkl' % (epoch + 1))
 
 
     print('Finished Training')
@@ -435,10 +437,11 @@ if __name__ == "__main__":
     parser.add_argument('--gamma', type=float, default=0.5, help='gamma of optim.lr_scheduler.StepLR, decay of lr')
     parser.add_argument('--echo_batches', type=int, default=50, help='how many batches display once')  # 50
     parser.add_argument('--epochs', type=int, default=50, help='total training epochs')
-    parser.add_argument('--log', type=str, default="CDCN_3modality2_P1", help='log and save model name')
+    parser.add_argument('--teacher_log', type=str, default="teacher_checkpoints", help='log and save model name')
+    parser.add_argument('--student_log', type=str, default="student_checkpoints", help='log and save model name')
     parser.add_argument('--finetune', action='store_true', default=False, help='whether finetune other models')
     parser.add_argument('--theta', type=float, default=0.7, help='hyper-parameters in CDCNpp')
 	
     args = parser.parse_args()
     # train_parent()
-    train_children()
+    train_student()
