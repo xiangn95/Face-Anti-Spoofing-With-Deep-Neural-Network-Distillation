@@ -34,7 +34,7 @@ from utils import AvgrageMeter, accuracy, performances
 image_dir = '/home/Disk1T/hxy/CASIA-CeFA/CASIA-CeFA/phase1/'         
 
 train_list = '/home/Disk1T/hxy/CASIA-CeFA/CASIA-CeFA/phase1/4@1_train.txt'
-val_list = '/home/Disk1T/hxy/CASIA-CeFA/CASIA-CeFA/phase1/4@1_dev_ref.txt'
+val_list = '/home/Disk1T/hxy/CASIA-CeFA/CASIA-CeFA/phase1/4@2_dev_ref.txt'
 
    
 # train_list = '/wrk/yuzitong/DONOTREMOVE/CVPRW2020/4@1_train.txt'
@@ -69,7 +69,7 @@ def train_parent():
     finetune = args.finetune
     if finetune==True:
         print('finetune!\n')
-
+        #checkpoint = 
     else:
         print('train from scratch!\n')
         log_file.write('train from scratch!\n')
@@ -165,12 +165,12 @@ def train_parent():
                 # set_trace()
                 print('epoch:%d, mini-batch:%3d, lr=%f, CE_loss= %.4f, accuracy= %.4f' % (epoch + 1, i + 1, lr,  train_loss_CE.avg, train_accu[i]))
         
-            # break            
+            #break            
         
         # scheduler.step()  
         # whole epoch average
         print('epoch:%d, Train: CE_loss= %.4f, accuracy = %.4f' % (epoch + 1, train_loss_CE.avg, sum(train_accu)/len(train_accu)))
-        log_file.write('epoch:%d, Train: CE_loss= %.4f, accuracy= %.4f' % (epoch + 1, train_loss_CE.avg, sum(train_accu)/len(train_accu)))
+        log_file.write('epoch:%d, Train: CE_loss= %.4f, accuracy= %.4f\n' % (epoch + 1, train_loss_CE.avg, sum(train_accu)/len(train_accu)))
         log_file.flush()
            
     
@@ -210,8 +210,8 @@ def train_parent():
 
                 val_accu.append(accuracy(output, spoof_label.long())[0].item())
 
-        print('epoch:%d, Validation: CE_loss= %.4f' % (epoch + 1, val_loss_CE.avg))
-        log_file.write('epoch:%d, Validation: CE_loss= %.4f, accuracy= %.4f' % (epoch + 1, val_loss_CE.avg, sum(train_accu)/len(train_accu)))
+        print('epoch:%d, Validation: CE_loss= %.4f, accuracy=%.4f' % (epoch + 1, val_loss_CE.avg, sum(val_accu)/len(val_accu)))
+        log_file.write('epoch:%d, Validation: CE_loss= %.4f, accuracy= %.4f\n' % (epoch + 1, val_loss_CE.avg, sum(val_accu)/len(val_accu)))
 
             #     map_score = 0.0
             #     for frame_t in range(inputs.shape[1]):
@@ -234,7 +234,13 @@ def train_parent():
             
         # save the model until the next improvement
         if (epoch+1) % save_epoch == 0:
-            torch.save(model.state_dict(), args.teacher_log+'/'+args.teacher_log+'_%d.pkl' % (epoch + 1))
+            torch.save({
+                'epoch': epoch,
+                'model_state_dict': model.state_dict(),
+                'optimizer_state_dict': optimizer.state_dict(),
+                
+            }, args.teacher_log+'/'+args.teacher_log+'_%d.pkl' % (epoch + 1))
+            #torch.save(model.state_dict(), args.teacher_log+'/'+args.teacher_log+'_%d.pkl' % (epoch + 1))
 
 
     print('Finished Training')
@@ -247,6 +253,10 @@ def train_student():
     # GPU  & log file  -->   if use DataParallel, please comment this command
     os.environ["CUDA_VISIBLE_DEVICES"] = "%d" % (args.gpu)
     save_epoch = 2
+    
+    checkpoint_path_t = './'+args.teacher_log+'/'+args.teacher_log+'_4.pkl'    
+    #checkpoint_path_s = './'+args.student_log+'/'+args.student_log+'_2.pkl'
+    
     isExists = os.path.exists(args.student_log)
     if not isExists:
         os.makedirs(args.student_log)
@@ -273,7 +283,7 @@ def train_student():
         #model = CDCN_3modality2( basic_conv=Conv2d_cd, theta=0.7)
         # model = CDCN_3modality2( basic_conv=Conv2d_cd, theta=args.theta)
         model_1 = AlexNet()
-        model_1 = model_1.cuda()
+        model_1 = model_1.load_state_dict(torch.load(checkpoint_path_t)).cuda()
 
         model_2 = AlexNet()
         model_2 = model_2.cuda()
@@ -418,7 +428,15 @@ def train_student():
             # save the model until the next improvement
         # if epoch > 10 and epoch % epoch_test == epoch_test -1:
         if (epoch+1) % save_epoch == 0:
-            torch.save(model_2.state_dict(), args.student_log+'/'+args.student_log+'_%d.pkl' % (epoch + 1))
+           
+            torch.save({
+                'epoch': epoch,
+                'model_state_dict': model_2.state_dict(),
+                'optimizer_state_dict': optimizer.state_dict(),
+
+            }, args.teacher_log+'/'+args.teacher_log+'_%d.pkl' % (epoch + 1))
+
+            #torch.save(model_2.state_dict(), args.student_log+'/'+args.student_log+'_%d.pkl' % (epoch + 1))
 
 
     print('Finished Training')
@@ -436,12 +454,12 @@ if __name__ == "__main__":
     parser.add_argument('--step_size', type=int, default=20, help='how many epochs lr decays once')  # 500  | DPC = 400
     parser.add_argument('--gamma', type=float, default=0.5, help='gamma of optim.lr_scheduler.StepLR, decay of lr')
     parser.add_argument('--echo_batches', type=int, default=50, help='how many batches display once')  # 50
-    parser.add_argument('--epochs', type=int, default=50, help='total training epochs')
+    parser.add_argument('--epochs', type=int, default=10, help='total training epochs')
     parser.add_argument('--teacher_log', type=str, default="teacher_checkpoints", help='log and save model name')
     parser.add_argument('--student_log', type=str, default="student_checkpoints", help='log and save model name')
     parser.add_argument('--finetune', action='store_true', default=False, help='whether finetune other models')
     parser.add_argument('--theta', type=float, default=0.7, help='hyper-parameters in CDCNpp')
 	
     args = parser.parse_args()
-    # train_parent()
+    #train_parent()
     train_student()
